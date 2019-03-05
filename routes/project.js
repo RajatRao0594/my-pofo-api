@@ -1,0 +1,30 @@
+const router = require('express').Router();
+const Project = require('../models/projectSchema')
+
+router.post('/',(req,res,next)=>{
+    let data = req.body;
+
+    data.alias = data.name.toLowerCase().trim().join('-');
+    let newProject = new Project(data);
+    newProject.save().then(data=>{
+        res.status(201).json({messages:"Project Created Successfully",data:data})
+    }).catch(err =>next(err))
+});
+
+router.get('/',(req,res,next)=>{
+    Project.find().countDocuments().then(totalCount =>{
+        Project.find().sort({createdOn:-1}).then(data =>{
+            res.status(200).json({messages:"Project List",data:data,count:totalCount})
+        })
+    }).catch(err=>next(err))
+});
+
+
+router.get('/:alias',(req,res,next) =>{
+    let alias = req.params.alias;
+    Project.findOne({alias:alias}).then(data =>{
+        res.status(200).json({data:data,message:'Single Project'})
+    }).catch(err => next(err))
+})
+
+module.exports = router
